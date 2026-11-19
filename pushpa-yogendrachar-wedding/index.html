@@ -147,6 +147,1224 @@
       animation: tickPulse 0.35s ease-out;
     }
 
+    /* Polaroid frame & instant GPU slide track */
+    .polaroid-frame {
+      background: #fffdf8;
+      padding: 12px 12px 36px 12px;
+      box-shadow: 0 12px 30px rgba(27, 67, 50, 0.16);
+      border: 1px solid rgba(197, 155, 67, 0.25);
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    #polaroid-track {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      will-change: transform;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    #polaroid-track.dragging {
+      transition: none;
+    }
+
+    .polaroid-slide {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+    }
+
+    .polaroid-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      -webkit-user-drag: none;
+      pointer-events: none;
+      display: block;
+    }
+  </style>
+</head>
+<body class="paper-texture border-t-4 border-[#1B4332] antialiased selection:bg-[#1B4332] selection:text-[#FAF7F0]">
+
+  <!-- Ambient Floating Petals Container -->
+  <div id="particles-container" aria-hidden="true"></div>
+
+  <!-- Envelope Intro Overlay -->
+  <div id="envelope-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-[#FAF7F0] px-4 py-6 overflow-y-auto">
+    <div class="relative w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl border border-[#C59B43]/50 bg-[#FCF9F2]">
+      <!-- Top Watercolor Flap -->
+      <div class="relative h-52 sm:h-64 overflow-hidden">
+        <img src="./assets/images/lakeside-backdrop.jpg" alt="Watercolor lakeside garden" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-b from-[#1B4332]/20 via-transparent to-[#FCF9F2]"></div>
+        <!-- Envelope V-flap border effect -->
+        <svg class="absolute bottom-0 left-0 w-full h-14 text-[#FCF9F2]" viewBox="0 0 400 60" preserveAspectRatio="none">
+          <polygon points="0,0 200,56 400,0 400,60 0,60" fill="currentColor" />
+          <polyline points="0,0 200,56 400,0" fill="none" stroke="#C59B43" stroke-width="1.5" stroke-opacity="0.7" />
+        </svg>
+      </div>
+
+      <!-- Envelope Body -->
+      <div class="px-6 pb-9 pt-2 text-center relative">
+        <!-- Gold Laurel Crest -->
+        <div class="mx-auto -mt-10 mb-3 w-20 h-20 rounded-full bg-[#FCF9F2] border-2 border-[#C59B43] shadow-md flex items-center justify-center">
+          <div class="text-center">
+            <span class="font-serif-editorial text-xl font-semibold tracking-widest text-[#1B4332]">P <span class="text-[#C59B43]">|</span> Y</span>
+          </div>
+        </div>
+
+        <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-medium mb-1">With the Blessings of Our Families</p>
+        <h1 class="font-script text-4xl sm:text-5xl text-[#1B4332] mb-2">Pushpa &amp; Yogendra</h1>
+        <p class="font-serif-editorial italic text-base text-[#2D5A44] mb-6">You are cordially invited to celebrate our wedding</p>
+
+        <!-- Wax Seal & Tap to Open -->
+        <button id="open-envelope-btn" type="button" class="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] shadow-lg hover:bg-[#2D5A44] transition-all duration-300 hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-[#C59B43]">
+          <svg class="w-4 h-4 text-[#D4AF37] transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span>Tap to Open</span>
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-[#FAF7F0]/90 backdrop-blur-md border-b border-[#C59B43]/25">
+    <nav class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+      <a href="#hero" class="font-serif-editorial text-lg font-semibold tracking-widest text-[#1B4332] shrink-0">
+        P <span class="text-[#C59B43]">|</span> Y
+      </a>
+      <div class="hidden md:flex items-center gap-5 text-xs uppercase tracking-[0.16em] text-[#1B4332] font-medium">
+        <a href="#families" class="hover:text-[#C59B43] transition-colors">Families</a>
+        <a href="#couple" class="hover:text-[#C59B43] transition-colors">Couple</a>
+        <a href="#schedule" class="hover:text-[#C59B43] transition-colors">Schedule</a>
+        <a href="#photos" class="hover:text-[#C59B43] transition-colors">Photos</a>
+        <a href="#videos" class="hover:text-[#C59B43] transition-colors">Videos</a>
+        <a href="#wishes" class="hover:text-[#C59B43] transition-colors">Wishes</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="mobile-menu-btn" type="button" class="md:hidden px-3 py-1.5 rounded-full border border-[#C59B43]/50 text-xs font-medium text-[#1B4332]" aria-label="Toggle navigation menu">
+          Menu
+        </button>
+        <a href="#wishes" class="px-4 py-1.5 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-medium tracking-wider uppercase hover:bg-[#2D5A44] transition-colors">
+          Wishes
+        </a>
+      </div>
+    </nav>
+    <!-- Mobile dropdown -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-[#C59B43]/20 bg-[#FAF7F0] px-4 py-3">
+      <div class="grid grid-cols-3 gap-2 text-center text-xs uppercase tracking-wider text-[#1B4332] font-medium">
+        <a href="#families" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Families</a>
+        <a href="#couple" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Couple</a>
+        <a href="#schedule" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Schedule</a>
+        <a href="#photos" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Photos</a>
+        <a href="#videos" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Videos</a>
+        <a href="#wishes" class="py-1.5 rounded hover:bg-[#1B4332]/5 mobile-nav-link">Wishes</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- 1. HERO & SCRATCH TO REVEAL -->
+    <section id="hero" class="relative pt-8 pb-16 px-4 overflow-hidden">
+      <div class="max-w-4xl mx-auto text-center">
+        <!-- Crest -->
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full border border-[#C59B43] bg-[#FCF9F2] shadow-sm mb-4">
+          <span class="font-serif-editorial text-lg font-semibold tracking-widest text-[#1B4332]">P <span class="text-[#C59B43]">|</span> Y</span>
+        </div>
+
+        <p class="text-xs uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-2">We Are Getting Married</p>
+        <h2 class="font-script text-5xl sm:text-7xl text-[#1B4332] leading-tight mb-2">
+          Pushpa <span class="text-[#C59B43] text-4xl sm:text-5xl mx-1">weds</span> Yogendrachar
+        </h2>
+        <p class="font-serif-editorial italic text-lg text-[#2D5A44] mb-6">
+          “Two hearts, two families, one timeless journey together.”
+        </p>
+
+        <!-- Hero Watercolor Archway -->
+        <div class="relative max-w-3xl mx-auto rounded-3xl overflow-hidden shadow-xl border border-[#C59B43]/40 mb-8">
+          <img src="./assets/images/hero-arch.jpg" alt="Floral wedding archway watercolor" class="w-full h-64 sm:h-96 object-cover" />
+        </div>
+
+        <!-- 1. Scratch-to-Reveal Date Card FIRST -->
+        <div class="max-w-md mx-auto mb-8">
+          <p class="text-xs uppercase tracking-[0.22em] text-[#6B8E78] font-medium mb-3">Scratch the card below to reveal our special day</p>
+          <div class="relative w-full h-40 rounded-2xl overflow-hidden shadow-lg border-2 border-[#C59B43]/60 bg-[#FCF9F2] flex items-center justify-center select-none">
+            <!-- Hidden Revealed Content -->
+            <div class="text-center px-4">
+              <p class="text-[11px] uppercase tracking-[0.26em] text-[#C59B43] font-semibold mb-1">Save The Dates</p>
+              <p class="font-serif-editorial text-2xl sm:text-3xl font-bold text-[#1B4332] tracking-wide">02 &amp; 03 DEC 2026</p>
+              <p class="text-xs text-[#2D5A44] mt-1 font-medium">Muktamba Paramashivaiah Kalyana Mantapa, Tumakuru</p>
+            </div>
+            <!-- Scratch Overlay Canvas -->
+            <canvas id="scratch-canvas" class="absolute inset-0 w-full h-full"></canvas>
+          </div>
+          <div class="mt-2.5 flex items-center justify-center gap-4">
+            <button id="reveal-scratch-btn" type="button" class="text-xs text-[#1B4332] underline underline-offset-4 hover:text-[#C59B43] transition-colors">
+              Tap to Reveal
+            </button>
+            <button id="reset-scratch-btn" type="button" class="text-xs text-[#6B8E78] underline underline-offset-4 hover:text-[#1B4332] transition-colors">
+              Reset Card
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Muhurtham Countdown BELOW Date Reveal -->
+        <div id="countdown-card" class="hidden max-w-lg mx-auto deckle-card rounded-2xl px-6 py-5">
+          <p class="text-[11px] uppercase tracking-[0.26em] text-[#C59B43] font-semibold mb-2">Countdown to Muhurtham</p>
+          <div id="countdown-grid" class="grid grid-cols-4 gap-3 sm:gap-6 font-serif-editorial text-[#1B4332]">
+            <div class="py-2 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30"><span id="cd-days" class="text-2xl sm:text-3xl font-bold block">--</span><span class="text-[10px] uppercase tracking-widest text-[#6B8E78]">Days</span></div>
+            <div class="py-2 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30"><span id="cd-hours" class="text-2xl sm:text-3xl font-bold block">--</span><span class="text-[10px] uppercase tracking-widest text-[#6B8E78]">Hours</span></div>
+            <div class="py-2 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30"><span id="cd-mins" class="text-2xl sm:text-3xl font-bold block">--</span><span class="text-[10px] uppercase tracking-widest text-[#6B8E78]">Mins</span></div>
+            <div class="py-2 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30"><span id="cd-secs" class="text-2xl sm:text-3xl font-bold block">--</span><span class="text-[10px] uppercase tracking-widest text-[#6B8E78]">Secs</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. INTRODUCING THE FAMILIES -->
+    <section id="families" class="py-14 px-4 bg-[#F4EFE6]/70 border-y border-[#C59B43]/20 reveal-on-scroll">
+      <div class="max-w-4xl mx-auto text-center">
+        <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-1">Two Families. One Promise.</p>
+        <h2 class="font-serif-editorial text-3xl sm:text-4xl tracking-[0.12em] uppercase text-[#1B4332]">Introducing</h2>
+        <p class="font-script text-3xl sm:text-4xl text-[#C59B43] -mt-1 mb-10">the families</p>
+
+        <div class="grid md:grid-cols-2 gap-8 items-stretch relative">
+          <!-- Bride Family -->
+          <div class="deckle-card rounded-2xl p-7 text-center flex flex-col justify-center">
+            <span class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-2">The Bride</span>
+            <h3 class="font-script text-4xl text-[#1B4332] mb-2">Pushpa S</h3>
+            <p class="font-serif-editorial italic text-base text-[#2D5A44] mb-3">Beloved Daughter of</p>
+            <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Smt. Manjula &amp; Sri Srinivas B V</p>
+          </div>
+
+          <!-- Groom Family -->
+          <div class="deckle-card rounded-2xl p-7 text-center flex flex-col justify-center">
+            <span class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-2">The Groom</span>
+            <h3 class="font-script text-4xl text-[#1B4332] mb-2">Yogendrachar M</h3>
+            <p class="font-serif-editorial italic text-base text-[#2D5A44] mb-3">Beloved Son of</p>
+            <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Smt. Lalitha C &amp; Sri Mohan Kumar H K</p>
+          </div>
+        </div>
+
+        <p class="mt-8 text-xs uppercase tracking-[0.26em] text-[#6B8E78]">
+          Together Forever • With Love &amp; Blessings from Both Families
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. HAPPY COUPLE -->
+    <section id="couple" class="relative py-16 px-4 overflow-hidden reveal-on-scroll">
+      <div class="absolute inset-0 z-0 opacity-30">
+        <img src="./assets/images/lakeside-backdrop.jpg" alt="Lakeside watercolor backdrop" class="w-full h-full object-cover" />
+      </div>
+      <div class="relative z-10 max-w-3xl mx-auto text-center">
+        <p class="text-[11px] uppercase tracking-[0.28em] text-[#1B4332] font-semibold mb-1">Two Souls, One Heart</p>
+        <h2 class="font-script text-5xl text-[#1B4332] mb-8">Happy Couple</h2>
+
+        <div class="space-y-6 text-left">
+          <div class="frosted-gold-card rounded-2xl p-6 sm:p-8">
+            <p class="text-[11px] uppercase tracking-[0.24em] text-[#C59B43] font-semibold mb-1">The Bride — Pushpa S</p>
+            <p class="font-serif-editorial italic text-lg sm:text-xl text-[#1B4332] leading-relaxed">
+              “Stepping into a beautiful new chapter surrounded by the warmth of family, cherished traditions, and a lifetime of shared dreams with Yogendrachar.”
+            </p>
+          </div>
+
+          <div class="frosted-gold-card rounded-2xl p-6 sm:p-8">
+            <p class="text-[11px] uppercase tracking-[0.24em] text-[#C59B43] font-semibold mb-1">The Groom — Yogendrachar M</p>
+            <p class="font-serif-editorial italic text-lg sm:text-xl text-[#1B4332] leading-relaxed">
+              “Grateful for every moment that led us here—ready to build a home filled with laughter, respect, and lifelong companionship with Pushpa.”
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SCHEDULE OF EVENTS (RECEPTION & MUHURTHAM) -->
+    <section id="schedule" class="py-16 px-4 bg-[#F4EFE6]/75 border-y border-[#C59B43]/20 reveal-on-scroll">
+      <div class="max-w-4xl mx-auto text-center">
+        <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-1">A Celebration of Joy &amp; Blessings</p>
+        <h2 class="font-serif-editorial text-3xl sm:text-4xl tracking-[0.12em] uppercase text-[#1B4332] mb-6">Schedule of Events</h2>
+
+        <!-- Mandapa Watercolor Banner -->
+        <div class="max-w-2xl mx-auto rounded-3xl overflow-hidden shadow-lg border border-[#C59B43]/40 mb-10">
+          <img src="./assets/images/mandapa-scene.jpg" alt="Traditional Kalyana Mantapa watercolor" class="w-full h-56 sm:h-72 object-cover" />
+        </div>
+
+        <!-- Two Events -->
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+          <!-- Reception -->
+          <div class="deckle-card rounded-2xl p-7 text-center">
+            <p class="text-xs uppercase tracking-[0.24em] text-[#C59B43] font-semibold mb-1">Wednesday, 02 December 2026</p>
+            <h3 class="font-script text-4xl text-[#1B4332] mb-2">Reception</h3>
+            <p class="text-sm font-semibold text-[#2D5A44]">6:30 PM Onwards</p>
+          </div>
+
+          <!-- Muhurtham -->
+          <div class="deckle-card rounded-2xl p-7 text-center">
+            <p class="text-xs uppercase tracking-[0.24em] text-[#C59B43] font-semibold mb-1">Thursday, 03 December 2026</p>
+            <h3 class="font-script text-4xl text-[#1B4332] mb-2">Muhurtham</h3>
+            <p class="text-sm font-semibold text-[#2D5A44]">8:35 AM to 9:35 AM</p>
+          </div>
+        </div>
+
+        <!-- Shared Venue Shown Once -->
+        <div class="deckle-card rounded-2xl p-6 mb-8 max-w-2xl mx-auto text-center">
+          <p class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-1">Venue</p>
+          <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Muktamba Paramashivaiah Kalyana Mantapa</p>
+          <p class="text-xs text-[#2D5A44] mt-1 leading-relaxed">
+            Chaithanya Badavane, Geddalahalli Main Road, Upparalli, Tumakuru, Karnataka 572102
+          </p>
+        </div>
+
+        <button id="download-ics-btn" type="button" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#1B4332] text-[#1B4332] text-xs font-semibold uppercase tracking-[0.18em] hover:bg-[#1B4332] hover:text-[#FAF7F0] transition-colors">
+          <span>Add Both Events to Calendar (.ics)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 4B. YOUR PRESENCE SLIDE -->
+    <section id="presence" class="py-14 px-4 reveal-on-scroll">
+      <div class="max-w-3xl mx-auto">
+        <div class="frosted-gold-card rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden">
+          <div class="inline-flex items-center justify-center w-12 h-12 rounded-full border border-[#C59B43]/60 bg-[#FAF7F0] mb-4 text-[#C59B43] text-lg">
+            &#10022;
+          </div>
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-1">With Warmth &amp; Gratitude</p>
+          <h2 class="font-script text-4xl sm:text-5xl text-[#1B4332] mb-4">Your Presence Makes It Memorable</h2>
+          <p class="font-serif-editorial italic text-lg sm:text-xl text-[#2D5A44] leading-relaxed max-w-2xl mx-auto">
+            “Your gracious presence, heartfelt blessings, and shared joy will make this celebration truly unforgettable. We cannot wait to welcome you and create lifelong memories together.”
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PHOTO GALLERY (INSTANT-SWIPE READ-ONLY POLAROID CAROUSEL) -->
+    <section id="photos" class="py-16 px-4 bg-[#F4EFE6]/75 border-y border-[#C59B43]/20 reveal-on-scroll">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-10">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-1">Cherished Moments</p>
+          <h2 class="font-serif-editorial text-3xl sm:text-4xl tracking-[0.12em] uppercase text-[#1B4332]">Photo Gallery</h2>
+          <p class="font-serif-editorial italic text-lg text-[#2D5A44] mt-1">Some chapters are written by destiny.</p>
+        </div>
+
+        <!-- Polaroid Carousel -->
+        <div class="max-w-md mx-auto">
+          <div class="relative flex items-center justify-center">
+            <button id="prev-polaroid" type="button" class="z-10 -mr-4 w-10 h-10 rounded-full bg-[#1B4332] text-[#FAF7F0] shadow-md flex items-center justify-center hover:bg-[#2D5A44] active:scale-95 transition-all" aria-label="Previous photo">
+              &#8592;
+            </button>
+
+            <div id="polaroid-card" class="polaroid-frame rounded-lg w-full max-w-xs sm:max-w-sm transform -rotate-1 transition-all duration-300">
+              <div class="aspect-[4/3] overflow-hidden rounded bg-[#EAE3D2] cursor-pointer relative" id="polaroid-img-wrap">
+                <div id="polaroid-track"></div>
+                <span id="polaroid-counter" class="absolute bottom-2 right-2 z-10 px-2 py-0.5 rounded-full bg-[#1B4332]/75 text-[#FAF7F0] text-[10px] tracking-wider">1 / 10</span>
+              </div>
+              <p id="polaroid-caption" class="mt-3 text-center font-script text-2xl text-[#1B4332]">Every moment with you is special ♡</p>
+            </div>
+
+            <button id="next-polaroid" type="button" class="z-10 -ml-4 w-10 h-10 rounded-full bg-[#1B4332] text-[#FAF7F0] shadow-md flex items-center justify-center hover:bg-[#2D5A44] active:scale-95 transition-all" aria-label="Next photo">
+              &#8594;
+            </button>
+          </div>
+          <div id="polaroid-dots" class="flex justify-center gap-2 mt-4"></div>
+          <p class="text-xs text-[#6B8E78] text-center mt-3">Swipe, use the arrows, or tap a photo to view full screen.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. VIDEO GALLERY (READ-ONLY WITH STARTING VIDEO FRAME THUMBNAILS) -->
+    <section id="videos" class="py-16 px-4 reveal-on-scroll">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center mb-8">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-[#6B8E78] font-semibold mb-1">Our Films</p>
+          <h2 class="font-serif-editorial text-3xl sm:text-4xl tracking-[0.12em] uppercase text-[#1B4332]">Video Gallery</h2>
+          <p class="font-serif-editorial italic text-lg text-[#2D5A44] mt-1">Engagement &amp; Save the Date Films</p>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="flex justify-center gap-3 mb-8 flex-wrap">
+          <button type="button" data-video-tab="all" class="video-tab-btn px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#1B4332] text-[#FAF7F0] transition-colors">
+            All Videos (5)
+          </button>
+          <button type="button" data-video-tab="engagement" class="video-tab-btn px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider border border-[#1B4332]/40 text-[#1B4332] hover:bg-[#1B4332]/10 transition-colors">
+            Engagement Cinematic (2)
+          </button>
+          <button type="button" data-video-tab="savethedate" class="video-tab-btn px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider border border-[#1B4332]/40 text-[#1B4332] hover:bg-[#1B4332]/10 transition-colors">
+            Save the Date (3)
+          </button>
+        </div>
+
+        <!-- Video Cards Grid -->
+        <div id="video-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </div>
+    </section>
+
+    <!-- 7. WISHES, VENUE DIRECTIONS & FOOTER -->
+    <section id="wishes" class="py-16 px-4 reveal-on-scroll">
+      <div class="max-w-2xl mx-auto">
+        <div class="arch-rsvp-card px-6 sm:px-12 pt-14 pb-10 text-center">
+          <div class="inline-flex items-center justify-center w-14 h-14 rounded-full border border-[#C59B43] bg-[#FAF7F0] mb-3">
+            <span class="font-serif-editorial text-base font-semibold tracking-widest text-[#1B4332]">P <span class="text-[#C59B43]">|</span> Y</span>
+          </div>
+
+          <h2 class="font-serif-editorial text-3xl sm:text-4xl tracking-[0.16em] uppercase text-[#1B4332] mb-1">Wishes &amp; Blessings</h2>
+          <p class="font-serif-editorial italic text-base text-[#2D5A44] mb-6">Leave your warm wishes for Pushpa &amp; Yogendrachar</p>
+
+          <form id="wishes-form" class="space-y-4 text-left max-w-md mx-auto">
+            <div>
+              <label for="wish-name" class="block text-[11px] uppercase tracking-[0.2em] text-[#6B8E78] font-semibold mb-1">Your Name</label>
+              <input id="wish-name" type="text" required placeholder="Enter your name" class="w-full px-4 py-2.5 rounded-xl border border-[#C59B43]/50 bg-[#FAF7F0] text-sm text-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]" />
+            </div>
+
+            <div>
+              <label for="wish-relation" class="block text-[11px] uppercase tracking-[0.2em] text-[#6B8E78] font-semibold mb-1">From (Family / Friend)</label>
+              <input id="wish-relation" type="text" placeholder="e.g., Friend, Cousin, Colleague" class="w-full px-4 py-2.5 rounded-xl border border-[#C59B43]/50 bg-[#FAF7F0] text-sm text-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]" />
+            </div>
+
+            <div>
+              <label for="wish-message" class="block text-[11px] uppercase tracking-[0.2em] text-[#6B8E78] font-semibold mb-1">Your Wishes &amp; Blessings</label>
+              <textarea id="wish-message" rows="3" required placeholder="Write your blessings for the bride &amp; groom..." class="w-full px-4 py-2.5 rounded-xl border border-[#C59B43]/50 bg-[#FAF7F0] text-sm text-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] hover:bg-[#2D5A44] transition-colors shadow-md">
+              Send Wishes
+            </button>
+          </form>
+
+          <!-- Recent Wishes List -->
+          <div id="wishes-container" class="mt-8 pt-6 border-t border-[#C59B43]/30 text-left max-w-md mx-auto">
+            <p class="text-[11px] uppercase tracking-[0.22em] text-[#6B8E78] font-semibold mb-3 text-center">Warm Wishes &amp; Blessings</p>
+            <div id="wishes-list" class="space-y-2.5 max-h-52 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- Venue & Directions Footer -->
+        <div class="mt-12 text-center">
+          <div class="deckle-card rounded-2xl p-6 mb-8">
+            <p class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-1">Venue Location</p>
+            <h3 class="font-serif-editorial text-2xl font-semibold text-[#1B4332] mb-1">Muktamba Paramashivaiah Kalyana Mantapa</h3>
+            <p class="text-sm text-[#2D5A44] mb-5">Chaithanya Badavane, Geddalahalli Main Road, Upparalli, Tumakuru, Karnataka 572102</p>
+            <a href="https://maps.app.goo.gl/3Jqvs8eamNZGPM3u7" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] shadow-lg hover:bg-[#2D5A44] transition-colors">
+              <span>Get Directions on Google Maps</span>
+              <span>&#8599;</span>
+            </a>
+          </div>
+
+          <p class="font-script text-3xl sm:text-4xl text-[#1B4332] mb-2">Celebrate this new chapter with us.</p>
+          <p class="text-[#C59B43] text-lg">&#9829;</p>
+          <p class="text-xs text-[#6B8E78] mt-1 tracking-widest uppercase">Pushpa S &amp; Yogendrachar M • December 2026</p>
+        </div>
+      </div>
+
+      <!-- Creator Credit at Last Corner -->
+      <div class="max-w-5xl mx-auto mt-10 pt-4 border-t border-[#C59B43]/20 flex justify-end pr-16 sm:pr-24">
+        <a href="https://github.com/DarshanS8553642855" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-[11px] text-[#6B8E78] hover:text-[#1B4332] transition-colors">
+          <span>Created by <strong class="font-semibold text-[#1B4332]">Darshan S</strong></span>
+          <span class="text-[#C59B43]">•</span>
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span class="underline underline-offset-2">@DarshanS8553642855</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating Music Player (Read-Only Mute/Play Toggle) -->
+  <div class="fixed bottom-5 right-5 z-40">
+    <button id="music-toggle-btn" type="button" aria-label="Toggle wedding music" class="w-12 h-12 rounded-full bg-[#1B4332] text-[#FAF7F0] shadow-xl border border-[#C59B43]/70 flex items-center justify-center hover:bg-[#2D5A44] transition-transform hover:scale-105">
+      <span id="music-icon" class="text-lg">&#128263;</span>
+    </button>
+  </div>
+
+  <!-- Photo Lightbox Modal -->
+  <div id="photo-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4">
+    <div class="relative max-w-3xl w-full bg-[#FCF9F2] rounded-2xl p-4 shadow-2xl">
+      <button id="close-photo-modal" type="button" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-[#1B4332] text-[#FAF7F0] flex items-center justify-center text-sm font-bold">&times;</button>
+      <img id="modal-photo-img" src="" alt="Pre-wedding photo preview" class="w-full max-h-[75vh] object-contain rounded-xl bg-[#EAE3D2]" />
+      <p id="modal-photo-caption" class="mt-3 text-center font-script text-2xl text-[#1B4332]"></p>
+    </div>
+  </div>
+
+  <!-- Video Theater Modal -->
+  <div id="video-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 p-4">
+    <div class="relative max-w-3xl w-full bg-[#1B4332] text-[#FAF7F0] rounded-2xl p-5 shadow-2xl border border-[#C59B43]/60">
+      <div class="flex items-center justify-between mb-3">
+        <h3 id="modal-video-title" class="font-serif-editorial text-xl font-semibold">Video Preview</h3>
+        <button id="close-video-modal" type="button" class="w-8 h-8 rounded-full bg-[#FAF7F0]/15 hover:bg-[#FAF7F0]/25 flex items-center justify-center text-lg">&times;</button>
+      </div>
+      <div id="modal-video-container" class="aspect-video w-full rounded-xl overflow-hidden bg-black flex items-center justify-center"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-2.5 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-medium tracking-wide shadow-xl border border-[#C59B43]"></div>
+
+  <script>
+    (function () {
+      // --- Toast helper ---
+      const toastEl = document.getElementById('toast');
+      let toastTimer = null;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.remove('hidden');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 3200);
+      }
+
+      // --- Ambient floating petals ---
+      const particlesContainer = document.getElementById('particles-container');
+      const petalColors = ['#C59B43', '#6B8E78', '#1B4332', '#D4AF37'];
+      for (let i = 0; i < 16; i++) {
+        const el = document.createElement('div');
+        el.className = 'petal-particle';
+        const size = 6 + (i % 4) * 3;
+        el.style.left = `${(i * 6.5) % 98}%`;
+        el.style.width = `${size}px`;
+        el.style.height = `${size * 1.4}px`;
+        el.style.backgroundColor = petalColors[i % petalColors.length];
+        el.style.opacity = '0.45';
+        el.style.borderRadius = '80% 0 80% 0';
+        el.style.animationDuration = `${11 + (i % 6) * 2.5}s`;
+        el.style.animationDelay = `${-(i * 1.3)}s`;
+        particlesContainer.appendChild(el);
+      }
+
+      // --- Scroll reveal observer ---
+      const revealEls = document.querySelectorAll('.reveal-on-scroll');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach((el) => observer.observe(el));
+
+      // --- Mobile menu ---
+      const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+      document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+      });
+
+      // --- Web Audio API Gentle Wedding Chime / Background Song ---
+      let audioCtx = null;
+      let musicPlaying = false;
+      let chimeInterval = null;
+      let customAudio = new Audio('./assets/audio/wedding-song.mp3');
+      customAudio.loop = true;
+      customAudio.addEventListener('error', () => { customAudio = null; });
+      const musicToggleBtn = document.getElementById('music-toggle-btn');
+      const musicIcon = document.getElementById('music-icon');
+
+      function playGentleNote(freq, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.045, audioCtx.currentTime + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      }
+
+      const melodyNotes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63, 293.66, 392.00];
+      let noteIdx = 0;
+
+      function startMusic() {
+        if (customAudio) {
+          customAudio.play().catch(() => {});
+          musicPlaying = true;
+          musicIcon.innerHTML = '&#128266;';
+          return;
+        }
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          musicPlaying = true;
+          musicIcon.innerHTML = '&#128266;';
+          clearInterval(chimeInterval);
+          chimeInterval = setInterval(() => {
+            if (musicPlaying) {
+              playGentleNote(melodyNotes[noteIdx % melodyNotes.length], 1.8);
+              noteIdx++;
+            }
+          }, 950);
+        } catch (e) {
+          musicPlaying = false;
+        }
+      }
+
+      function stopMusic() {
+        musicPlaying = false;
+        musicIcon.innerHTML = '&#128263;';
+        clearInterval(chimeInterval);
+        if (customAudio) customAudio.pause();
+      }
+
+      musicToggleBtn.addEventListener('click', () => {
+        if (musicPlaying) stopMusic();
+        else startMusic();
+      });
+
+      // --- Celebratory Petal & Gold Confetti Burst on Open ---
+      function triggerOpenBurst() {
+        const burstColors = ['#D4AF37', '#C59B43', '#1B4332', '#6B8E78', '#E9C46A'];
+        for (let i = 0; i < 36; i++) {
+          const piece = document.createElement('div');
+          const angle = (Math.PI * 2 * i) / 36 + (Math.random() * 0.2);
+          const velocity = 90 + Math.random() * 200;
+          const dx = Math.cos(angle) * velocity;
+          const dy = Math.sin(angle) * velocity - 40;
+          piece.style.position = 'fixed';
+          piece.style.left = '50%';
+          piece.style.top = '50%';
+          piece.style.width = `${6 + Math.random() * 6}px`;
+          piece.style.height = `${8 + Math.random() * 8}px`;
+          piece.style.backgroundColor = burstColors[i % burstColors.length];
+          piece.style.borderRadius = i % 2 === 0 ? '80% 0 80% 0' : '50%';
+          piece.style.zIndex = '60';
+          piece.style.pointerEvents = 'none';
+          piece.style.opacity = '1';
+          piece.style.transition = 'transform 1.15s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.15s ease-out';
+          document.body.appendChild(piece);
+          requestAnimationFrame(() => {
+            piece.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random() * 540}deg) scale(0.7)`;
+            piece.style.opacity = '0';
+          });
+          setTimeout(() => piece.remove(), 1200);
+        }
+      }
+
+      // --- Envelope Overlay ---
+      const envelopeOverlay = document.getElementById('envelope-overlay');
+      document.getElementById('open-envelope-btn').addEventListener('click', () => {
+        triggerOpenBurst();
+        envelopeOverlay.classList.add('opened');
+        setTimeout(() => { envelopeOverlay.style.display = 'none'; }, 850);
+        startMusic();
+      });
+
+      // --- Countdown Timer to Muhurtham (03 Dec 2026 08:35 AM IST) ---
+      const targetDate = new Date('2026-12-03T08:35:00+05:30').getTime();
+      function updateCountdown() {
+        const now = Date.now();
+        const diff = Math.max(0, targetDate - now);
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((diff / (1000 * 60)) % 60);
+        const secs = Math.floor((diff / 1000) % 60);
+        document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
+        document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+        const secsEl = document.getElementById('cd-secs');
+        const newSec = String(secs).padStart(2, '0');
+        if (secsEl.textContent !== newSec) {
+          secsEl.textContent = newSec;
+          secsEl.classList.remove('tick-pulse');
+          void secsEl.offsetWidth;
+          secsEl.classList.add('tick-pulse');
+        }
+      }
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+
+      // --- Party Popper Confetti Animation ---
+      function triggerPartyPopper() {
+        const cardRect = scratchCanvas.getBoundingClientRect();
+        const origins = [
+          { x: cardRect.left + 20, y: cardRect.top + cardRect.height / 2, baseAngle: -Math.PI / 3 },
+          { x: cardRect.right - 20, y: cardRect.top + cardRect.height / 2, baseAngle: (-2 * Math.PI) / 3 }
+        ];
+        const popperColors = ['#D4AF37', '#1B4332', '#E09F3E', '#FF6B6B', '#F3D078', '#A63A50'];
+        origins.forEach((origin) => {
+          for (let i = 0; i < 28; i++) {
+            const piece = document.createElement('div');
+            const spread = (Math.random() - 0.5) * 1.1;
+            const angle = origin.baseAngle + spread;
+            const velocity = 110 + Math.random() * 210;
+            const dx = Math.cos(angle) * velocity;
+            const dy = Math.sin(angle) * velocity - 30;
+            piece.style.position = 'fixed';
+            piece.style.left = `${origin.x}px`;
+            piece.style.top = `${origin.y}px`;
+            piece.style.width = `${6 + Math.random() * 6}px`;
+            piece.style.height = `${8 + Math.random() * 8}px`;
+            piece.style.backgroundColor = popperColors[i % popperColors.length];
+            piece.style.borderRadius = i % 3 === 0 ? '50%' : '2px';
+            piece.style.zIndex = '60';
+            piece.style.pointerEvents = 'none';
+            piece.style.opacity = '1';
+            piece.style.transition = 'transform 1.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.25s ease-out';
+            document.body.appendChild(piece);
+            requestAnimationFrame(() => {
+              piece.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random() * 720}deg) scale(0.75)`;
+              piece.style.opacity = '0';
+            });
+            setTimeout(() => piece.remove(), 1300);
+          }
+        });
+      }
+
+      // --- Scratch-to-Reveal Card ---
+      const scratchCanvas = document.getElementById('scratch-canvas');
+      const sCtx = scratchCanvas.getContext('2d');
+      const countdownCard = document.getElementById('countdown-card');
+      let isDrawing = false;
+      let scratchRevealed = false;
+      let scratchStrokeCount = 0;
+
+      function completeScratchReveal() {
+        if (scratchRevealed) return;
+        scratchRevealed = true;
+        isDrawing = false;
+        scratchCanvas.style.opacity = '0';
+        scratchCanvas.style.pointerEvents = 'none';
+        setTimeout(() => {
+          if (scratchRevealed) sCtx.clearRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+        }, 600);
+        triggerPartyPopper();
+        countdownCard.classList.remove('hidden', 'countdown-animate-in');
+        void countdownCard.offsetWidth;
+        countdownCard.classList.add('countdown-animate-in');
+      }
+
+      function initScratchCard() {
+        scratchRevealed = false;
+        scratchStrokeCount = 0;
+        scratchCanvas.style.opacity = '1';
+        scratchCanvas.style.pointerEvents = 'auto';
+        countdownCard.classList.add('hidden');
+        countdownCard.classList.remove('countdown-animate-in');
+        const rect = scratchCanvas.parentElement.getBoundingClientRect();
+        scratchCanvas.width = Math.max(rect.width || 0, 320);
+        scratchCanvas.height = Math.max(rect.height || 0, 160);
+        sCtx.globalCompositeOperation = 'source-over';
+        const grad = sCtx.createLinearGradient(0, 0, scratchCanvas.width, scratchCanvas.height);
+        grad.addColorStop(0, '#1B4332');
+        grad.addColorStop(1, '#2D5A44');
+        sCtx.fillStyle = grad;
+        sCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+
+        sCtx.strokeStyle = 'rgba(212, 175, 55, 0.55)';
+        sCtx.lineWidth = 2;
+        sCtx.strokeRect(8, 8, scratchCanvas.width - 16, scratchCanvas.height - 16);
+
+        sCtx.fillStyle = '#D4AF37';
+        sCtx.font = '600 13px Inter, sans-serif';
+        sCtx.textAlign = 'center';
+        sCtx.fillText('SCRATCH TO REVEAL', scratchCanvas.width / 2, scratchCanvas.height / 2 - 6);
+        sCtx.fillStyle = '#FAF7F0';
+        sCtx.font = 'italic 16px "Cormorant Garamond", serif';
+        sCtx.fillText('our special day', scratchCanvas.width / 2, scratchCanvas.height / 2 + 18);
+      }
+
+      function checkScratchProgress() {
+        if (scratchRevealed) return;
+        scratchStrokeCount++;
+        if (scratchStrokeCount % 3 !== 0) return;
+        try {
+          const pixels = sCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height).data;
+          let cleared = 0;
+          const total = pixels.length / 16;
+          for (let i = 3; i < pixels.length; i += 16) {
+            if (pixels[i] === 0) cleared++;
+          }
+          if (cleared / total >= 0.70) {
+            completeScratchReveal();
+          }
+        } catch (e) {}
+      }
+
+      function scratchAt(clientX, clientY) {
+        if (scratchRevealed) return;
+        const rect = scratchCanvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const x = (clientX - rect.left) * (scratchCanvas.width / rect.width);
+        const y = (clientY - rect.top) * (scratchCanvas.height / rect.height);
+        sCtx.globalCompositeOperation = 'destination-out';
+        sCtx.beginPath();
+        sCtx.arc(x, y, 26, 0, Math.PI * 2);
+        sCtx.fill();
+        checkScratchProgress();
+      }
+
+      scratchCanvas.addEventListener('pointerdown', (e) => {
+        isDrawing = true;
+        try { scratchCanvas.setPointerCapture(e.pointerId); } catch (err) {}
+        scratchAt(e.clientX, e.clientY);
+      });
+      scratchCanvas.addEventListener('pointermove', (e) => {
+        if (isDrawing) scratchAt(e.clientX, e.clientY);
+      });
+      scratchCanvas.addEventListener('pointerup', () => { isDrawing = false; });
+      scratchCanvas.addEventListener('pointercancel', () => { isDrawing = false; });
+
+      document.getElementById('reveal-scratch-btn').addEventListener('click', completeScratchReveal);
+      document.getElementById('reset-scratch-btn').addEventListener('click', initScratchCard);
+      initScratchCard();
+      window.addEventListener('load', () => { if (!scratchRevealed) initScratchCard(); });
+
+      // --- Pre-Wedding Photos Carousel (Zero-Delay GPU Track + Real-Time Touch/Pointer Swipe) ---
+      const photos = [
+        { src: './assets/photos/photo1.jpg', caption: 'Every moment with you is special ♡' },
+        { src: './assets/photos/photo2.jpg', caption: 'Stepping into forever together' },
+        { src: './assets/photos/photo3.jpg', caption: 'Two souls, one timeless journey' },
+        { src: './assets/photos/photo4.jpg', caption: 'Written in the stars' },
+        { src: './assets/photos/photo5.jpg', caption: 'Laughter, love, and a lifetime ahead' },
+        { src: './assets/photos/photo6.jpg', caption: 'Together is our favorite place to be' },
+        { src: './assets/photos/photo7.jpg', caption: 'A love story for the ages' },
+        { src: './assets/photos/photo8.jpg', caption: 'Hand in hand, heart to heart' },
+        { src: './assets/photos/photo9.jpg', caption: 'Cherishing every second with you' },
+        { src: './assets/photos/photo10.jpg', caption: 'Forever begins with you ♡' }
+      ];
+      let currentPolaroid = 0;
+
+      const polaroidTrack = document.getElementById('polaroid-track');
+      const polaroidCaption = document.getElementById('polaroid-caption');
+      const polaroidCounter = document.getElementById('polaroid-counter');
+      const polaroidDots = document.getElementById('polaroid-dots');
+      const polaroidWrap = document.getElementById('polaroid-img-wrap');
+      const polaroidCard = document.getElementById('polaroid-card');
+
+      // Pre-build all 10 slides in DOM so swipes never stall waiting for image decoding
+      photos.forEach((item, idx) => {
+        const slide = document.createElement('div');
+        slide.className = 'polaroid-slide';
+        const img = document.createElement('img');
+        img.src = item.src;
+        img.alt = item.caption;
+        img.draggable = false;
+        img.decoding = 'async';
+        img.loading = idx < 3 ? 'eager' : 'lazy';
+        slide.appendChild(img);
+        polaroidTrack.appendChild(slide);
+      });
+
+      function goToPolaroid(newIdx) {
+        currentPolaroid = (newIdx + photos.length) % photos.length;
+        polaroidTrack.classList.remove('dragging');
+        polaroidTrack.style.transform = `translate3d(-${currentPolaroid * 100}%, 0, 0)`;
+        polaroidCaption.textContent = photos[currentPolaroid].caption;
+        polaroidCounter.textContent = `${currentPolaroid + 1} / ${photos.length}`;
+        renderPolaroidDots();
+
+        // Warm-decode adjacent slides
+        [(currentPolaroid + 1) % photos.length, (currentPolaroid - 1 + photos.length) % photos.length].forEach((adj) => {
+          const adjImg = polaroidTrack.children[adj]?.querySelector('img');
+          if (adjImg && adjImg.loading === 'lazy') adjImg.loading = 'eager';
+        });
+      }
+
+      function renderPolaroidDots() {
+        polaroidDots.innerHTML = '';
+        photos.forEach((_, idx) => {
+          const dot = document.createElement('button');
+          dot.type = 'button';
+          dot.className = `w-2.5 h-2.5 rounded-full transition-all ${idx === currentPolaroid ? 'bg-[#1B4332] w-6' : 'bg-[#C59B43]/40'}`;
+          dot.setAttribute('aria-label', `Photo ${idx + 1}`);
+          dot.addEventListener('click', () => goToPolaroid(idx));
+          polaroidDots.appendChild(dot);
+        });
+      }
+
+      document.getElementById('prev-polaroid').addEventListener('click', () => {
+        goToPolaroid(currentPolaroid - 1);
+      });
+      document.getElementById('next-polaroid').addEventListener('click', () => {
+        goToPolaroid(currentPolaroid + 1);
+      });
+
+      // Live 1:1 Finger/Mouse Tracking Swipe on Polaroid Card
+      let dragStartX = null;
+      let dragStartY = null;
+      let didSwipe = false;
+
+      polaroidCard.addEventListener('pointerdown', (e) => {
+        if (e.button !== undefined && e.button !== 0) return;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        didSwipe = false;
+      });
+
+      polaroidCard.addEventListener('pointermove', (e) => {
+        if (dragStartX === null) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+          didSwipe = true;
+          polaroidTrack.classList.add('dragging');
+          const width = polaroidWrap.clientWidth || 300;
+          const pctOffset = (dx / width) * 100;
+          polaroidTrack.style.transform = `translate3d(${-(currentPolaroid * 100) + pctOffset}%, 0, 0)`;
+        }
+      });
+
+      function endPolaroidDrag(e) {
+        if (dragStartX === null) return;
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        polaroidTrack.classList.remove('dragging');
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+          didSwipe = true;
+          goToPolaroid(dx < 0 ? currentPolaroid + 1 : currentPolaroid - 1);
+        } else {
+          polaroidTrack.style.transform = `translate3d(-${currentPolaroid * 100}%, 0, 0)`;
+        }
+        dragStartX = null;
+        dragStartY = null;
+      }
+
+      polaroidCard.addEventListener('pointerup', endPolaroidDrag);
+      polaroidCard.addEventListener('pointercancel', () => {
+        polaroidTrack.classList.remove('dragging');
+        polaroidTrack.style.transform = `translate3d(-${currentPolaroid * 100}%, 0, 0)`;
+        dragStartX = null;
+        dragStartY = null;
+      });
+
+      // Keyboard arrow support
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') goToPolaroid(currentPolaroid - 1);
+        else if (e.key === 'ArrowRight') goToPolaroid(currentPolaroid + 1);
+      });
+
+      polaroidWrap.addEventListener('click', () => {
+        if (!didSwipe) openPhotoModal(currentPolaroid);
+        didSwipe = false;
+      });
+
+      const photoModal = document.getElementById('photo-modal');
+      function openPhotoModal(idx) {
+        document.getElementById('modal-photo-img').src = photos[idx].src;
+        document.getElementById('modal-photo-caption').textContent = photos[idx].caption;
+        photoModal.classList.remove('hidden');
+        photoModal.classList.add('flex');
+      }
+      document.getElementById('close-photo-modal').addEventListener('click', () => {
+        photoModal.classList.add('hidden');
+        photoModal.classList.remove('flex');
+      });
+      photoModal.addEventListener('click', (e) => {
+        if (e.target === photoModal) {
+          photoModal.classList.add('hidden');
+          photoModal.classList.remove('flex');
+        }
+      });
+
+      renderPolaroidDots();
+
+      // --- Cinematic Videos (Strictly Read-Only, Actual Video Starting Frame Thumbnails) ---
+      const videoSlots = [
+        { id: 'eng-1', category: 'engagement', title: 'Engagement Cinematic Film I', subtitle: 'Highlights & Ring Ceremony', src: './assets/videos/engagement-1.mp4' },
+        { id: 'eng-2', category: 'engagement', title: 'Engagement Cinematic Film II', subtitle: 'Family Blessings & Celebrations', src: './assets/videos/engagement-2.mp4' },
+        { id: 'std-1', category: 'savethedate', title: 'Save the Date — Reel I', subtitle: '02 & 03 Dec 2026 Teaser', src: './assets/videos/save-the-date-1.mp4' },
+        { id: 'std-2', category: 'savethedate', title: 'Save the Date — Reel II', subtitle: 'Story & Countdown', src: './assets/videos/save-the-date-2.mp4' },
+        { id: 'std-3', category: 'savethedate', title: 'Save the Date — Reel III', subtitle: 'Formal Invitation Reel', src: './assets/videos/save-the-date-3.mp4' }
+      ];
+      let activeVideoTab = 'all';
+
+      const videoGrid = document.getElementById('video-grid');
+      const videoModal = document.getElementById('video-modal');
+      const modalVideoContainer = document.getElementById('modal-video-container');
+      const modalVideoTitle = document.getElementById('modal-video-title');
+
+      function renderVideos() {
+        videoGrid.innerHTML = '';
+        const filtered = activeVideoTab === 'all' ? videoSlots : videoSlots.filter((v) => v.category === activeVideoTab);
+        filtered.forEach((v) => {
+          const card = document.createElement('div');
+          card.className = 'deckle-card rounded-2xl overflow-hidden flex flex-col cursor-pointer group';
+          const badgeLabel = v.category === 'engagement' ? 'Engagement Cinematic' : 'Save the Date';
+          card.innerHTML = `
+            <div class="relative aspect-video bg-[#1B4332]/15 overflow-hidden">
+              <video src="${v.src}#t=0.5" class="w-full h-full object-cover" muted playsinline preload="metadata"></video>
+              <div class="absolute inset-0 bg-[#1B4332]/25 group-hover:bg-[#1B4332]/15 transition-colors flex items-center justify-center">
+                <button type="button" data-play-id="${v.id}" class="w-12 h-12 rounded-full bg-[#FAF7F0]/95 text-[#1B4332] shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform" aria-label="Play ${v.title}">
+                  &#9658;
+                </button>
+              </div>
+              <span class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-[#1B4332]/85 text-[#FAF7F0] text-[10px] uppercase tracking-wider font-medium">${badgeLabel}</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-serif-editorial text-lg font-semibold text-[#1B4332]">${v.title}</h3>
+              <p class="text-xs text-[#6B8E78]">${v.subtitle}</p>
+            </div>
+          `;
+          const vidEl = card.querySelector('video');
+          vidEl.addEventListener('loadedmetadata', () => {
+            if (vidEl.duration && vidEl.duration > 0.5) {
+              vidEl.currentTime = 0.5;
+            }
+          });
+          card.addEventListener('click', () => openVideoModal(v));
+          videoGrid.appendChild(card);
+        });
+      }
+
+      function openVideoModal(slot) {
+        modalVideoTitle.textContent = slot.title;
+        modalVideoContainer.innerHTML = `<video src="${slot.src}" controls autoplay playsinline class="w-full h-full rounded-xl"></video>`;
+        videoModal.classList.remove('hidden');
+        videoModal.classList.add('flex');
+      }
+
+      document.getElementById('close-video-modal').addEventListener('click', () => {
+        modalVideoContainer.innerHTML = '';
+        videoModal.classList.add('hidden');
+        videoModal.classList.remove('flex');
+      });
+
+      document.querySelectorAll('.video-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeVideoTab = btn.dataset.videoTab;
+          document.querySelectorAll('.video-tab-btn').forEach((b) => {
+            b.className = 'video-tab-btn px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider border border-[#1B4332]/40 text-[#1B4332] hover:bg-[#1B4332]/10 transition-colors';
+          });
+          btn.className = 'video-tab-btn px-5 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#1B4332] text-[#FAF7F0] transition-colors';
+          renderVideos();
+        });
+      });
+
+      renderVideos();
+
+      // --- Download .ics Calendar Invite ---
+      document.getElementById('download-ics-btn').addEventListener('click', () => {
+        const ics = [
+          'BEGIN:VCALENDAR',
+          'VERSION:2.0',
+          'PRODID:-//Pushpa & Yogendrachar Wedding//EN',
+          'BEGIN:VEVENT',
+          'UID:reception-pushpa-yogendrachar@2026',
+          'DTSTART:20261202T183000',
+          'DTEND:20261202T220000',
+          'SUMMARY:Wedding Reception - Pushpa S & Yogendrachar M',
+          'LOCATION:Muktamba Paramashivaiah Kalyana Mantapa, Tumakuru, Karnataka 572102',
+          'DESCRIPTION:Reception from 6:30 PM Onwards. Maps: https://maps.app.goo.gl/3Jqvs8eamNZGPM3u7',
+          'END:VEVENT',
+          'BEGIN:VEVENT',
+          'UID:muhurtham-pushpa-yogendrachar@2026',
+          'DTSTART:20261203T083500',
+          'DTEND:20261203T093500',
+          'SUMMARY:Muhurtham - Pushpa S & Yogendrachar M',
+          'LOCATION:Muktamba Paramashivaiah Kalyana Mantapa, Tumakuru, Karnataka 572102',
+          'DESCRIPTION:Muhurtham from 8:35 AM to 9:35 AM. Maps: https://maps.app.goo.gl/3Jqvs8eamNZGPM3u7',
+          'END:VEVENT',
+          'END:VCALENDAR'
+        ].join('\r\n');
+        const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Pushpa_Yogendrachar_Wedding.ics';
+        a.click();
+        showToast('Calendar invite downloaded!');
+      });
+
+      // --- Wishes & Blessings Form ---
+      const defaultWishes = [
+        { name: 'Srinivas B V & Manjula', relation: 'Parents of the Bride', message: 'Welcoming everyone with warmth, love, and blessings!' },
+        { name: 'Mohan Kumar H K & Lalitha C', relation: 'Parents of the Groom', message: 'Wishing Pushpa & Yogendrachar a lifetime of happiness together!' }
+      ];
+      let wishesList = [...defaultWishes];
+      try {
+        const saved = localStorage.getItem('pushpa_yogendrachar_wishes');
+        if (saved) wishesList = JSON.parse(saved);
+      } catch (e) {}
+
+      function renderWishes() {
+        const listEl = document.getElementById('wishes-list');
+        listEl.innerHTML = '';
+        wishesList.slice().reverse().forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'p-3.5 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30 text-xs';
+          div.innerHTML = `
+            <div class="flex items-center justify-between gap-2 mb-1">
+              <span class="font-semibold text-[#1B4332]">${item.name}</span>
+              ${item.relation ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1B4332]/10 text-[#1B4332]">${item.relation}</span>` : ''}
+            </div>
+            <p class="text-[#2D5A44] italic">“${item.message}”</p>
+          `;
+          listEl.appendChild(div);
+        });
+      }
+      renderWishes();
+
+      document.getElementById('wishes-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('wish-name').value.trim();
+        const relation = document.getElementById('wish-relation').value.trim();
+        const message = document.getElementById('wish-message').value.trim();
+        if (!name || !message) return;
+
+        wishesList.push({ name, relation, message });
+        try {
+          localStorage.setItem('pushpa_yogendrachar_wishes', JSON.stringify(wishesList));
+        } catch (err) {}
+        renderWishes();
+        e.target.reset();
+        showToast('Thank you for your warm wishes!');
+      });
+    })();
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pushpa weds Yogendrachar — Wedding Invitation</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Great+Vibes&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream: #FAF7F0;
+      --ivory: #F4EFE6;
+      --forest: #1B4332;
+      --forest-light: #2D5A44;
+      --sage: #6B8E78;
+      --gold: #C59B43;
+      --gold-bright: #D4AF37;
+    }
+
+    body {
+      background-color: var(--cream);
+      color: var(--forest);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .font-script {
+      font-family: 'Great Vibes', cursive;
+    }
+
+    .font-serif-editorial {
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* Subtle paper grain */
+    .paper-texture {
+      background-color: #FAF7F0;
+      background-image:
+        radial-gradient(rgba(197, 155, 67, 0.06) 1px, transparent 0),
+        radial-gradient(rgba(27, 67, 50, 0.04) 1px, transparent 0);
+      background-size: 32px 32px;
+      background-position: 0 0, 16px 16px;
+    }
+
+    /* Deckle / torn paper edge effect */
+    .deckle-card {
+      background: #FCF9F2;
+      box-shadow: 0 12px 35px -8px rgba(27, 67, 50, 0.14), 0 0 0 1px rgba(197, 155, 67, 0.28);
+      position: relative;
+    }
+
+    /* Frosted glass card */
+    .frosted-gold-card {
+      background: rgba(250, 247, 240, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(197, 155, 67, 0.55);
+      box-shadow: 0 14px 36px rgba(27, 67, 50, 0.12);
+    }
+
+    /* Scalloped arch card for RSVP */
+    .arch-rsvp-card {
+      border-radius: 160px 160px 24px 24px;
+      background: rgba(252, 249, 242, 0.95);
+      border: 1.5px solid rgba(197, 155, 67, 0.55);
+      box-shadow: 0 20px 50px rgba(27, 67, 50, 0.16);
+    }
+
+    /* Envelope overlay animation */
+    #envelope-overlay {
+      transition: opacity 0.85s ease, transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #envelope-overlay.opened {
+      opacity: 0;
+      transform: scale(1.06) translateY(-24px);
+      pointer-events: none;
+    }
+
+    /* Floating particles */
+    @keyframes floatDown {
+      0% {
+        transform: translateY(-10vh) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.65;
+      }
+      85% {
+        opacity: 0.65;
+      }
+      100% {
+        transform: translateY(108vh) translateX(30px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    .petal-particle {
+      position: fixed;
+      top: -5vh;
+      pointer-events: none;
+      z-index: 30;
+      animation: floatDown linear infinite;
+    }
+
+    /* Fade in on scroll */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Scratch card canvas */
+    #scratch-canvas {
+      touch-action: none;
+      cursor: crosshair;
+      transition: opacity 0.6s ease;
+    }
+
+    /* Countdown entrance & tick animations */
+    @keyframes countdownReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.92);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1.02);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .countdown-animate-in {
+      animation: countdownReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes tickPulse {
+      0% { transform: scale(1.14); color: #C59B43; }
+      100% { transform: scale(1); color: #1B4332; }
+    }
+    .tick-pulse {
+      animation: tickPulse 0.35s ease-out;
+    }
+
     /* Polaroid frame */
     .polaroid-frame {
       background: #fffdf8;
@@ -326,7 +1544,7 @@
             <span class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-2">The Groom</span>
             <h3 class="font-script text-4xl text-[#1B4332] mb-2">Yogendrachar M</h3>
             <p class="font-serif-editorial italic text-base text-[#2D5A44] mb-3">Beloved Son of</p>
-            <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Smt. Lalitha C &amp; Sri Mohan Kumar H K</p>
+            <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Smt. C Lalitha &amp; Sri Mohan Kumar H K</p>
           </div>
         </div>
 
