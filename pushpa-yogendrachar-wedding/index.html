@@ -548,7 +548,7 @@
           <div class="deckle-card rounded-2xl p-6 mb-8">
             <p class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-1">Venue Location</p>
             <h3 class="font-serif-editorial text-2xl font-semibold text-[#1B4332] mb-1">Muktamba Paramashivaiah Kalyana Mantapa</h3>
-            <p class="text-sm text-[#2D5A44] mb-5">Chaithanya Badavane, Geddalahalli Main Road, Upparalli, Tumakuru, Karnataka 572102</p>
+            <p class="text-sm text-[#2D5A44] mb-5">Chaithanya Badavane, Geddalahalli Main Road, Upparahalli, Tumakuru, Karnataka 572102</p>
             <a href="https://maps.app.goo.gl/3Jqvs8eamNZGPM3u7" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] shadow-lg hover:bg-[#2D5A44] transition-colors">
               <span>Get Directions on Google Maps</span>
               <span>&#8599;</span>
@@ -1190,13 +1190,14 @@
       });
 
       // --- Shared Wishes & Blessings (Supabase REST API + localStorage fallback) ---
-      const SUPABASE_URL = 'https://sxyrlqplxbikktteunyz.supabase.co'; // e.g., https://xyzcompany.supabase.co
-      const SUPABASE_ANON_KEY = 'sb_publishable_xcSb7m1r-nbEA1yBHQFvfw_IguTpp4b';
+      const RAW_SUPABASE_URL = 'https://sxyrlqplxbikktteunyz.supabase.co';
+      const SUPABASE_URL = RAW_SUPABASE_URL.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_xcSb7m1r-nbEA1yBHQFvfw_IguTpp4b';
       const hasSharedBackend =
         SUPABASE_URL &&
-        SUPABASE_ANON_KEY &&
+        SUPABASE_PUBLISHABLE_KEY &&
         !SUPABASE_URL.startsWith('YOUR_') &&
-        !SUPABASE_ANON_KEY.startsWith('YOUR_');
+        !SUPABASE_PUBLISHABLE_KEY.startsWith('YOUR_');
 
       const defaultWishes = [
         { name: 'Srinivas B V & Manjula', relation: 'Parents of the Bride', message: 'Welcoming everyone with warmth, love, and blessings!' },
@@ -1233,6 +1234,12 @@
         });
       }
 
+      function saveLocalWishes(list) {
+        try {
+          localStorage.setItem('pushpa_yogendrachar_wishes', JSON.stringify(list));
+        } catch (e) {}
+      }
+
       async function loadSharedWishes() {
         if (hasSharedBackend) {
           try {
@@ -1240,14 +1247,14 @@
               `${SUPABASE_URL}/rest/v1/wishes?select=name,relation,message,created_at&order=created_at.asc`,
               {
                 headers: {
-                  apikey: SUPABASE_ANON_KEY,
-                  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                  apikey: SUPABASE_PUBLISHABLE_KEY
                 }
               }
             );
             if (res.ok) {
               const rows = await res.json();
               wishesList = Array.isArray(rows) ? rows : [];
+              saveLocalWishes(wishesList);
               renderWishes();
               return;
             }
@@ -1282,18 +1289,24 @@
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                apikey: SUPABASE_ANON_KEY,
-                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                apikey: SUPABASE_PUBLISHABLE_KEY,
                 Prefer: 'return=minimal'
               },
               body: JSON.stringify(newWish)
             });
-            if (!res.ok) throw new Error('Failed to save wish');
+            if (!res.ok) {
+              const errText = await res.text().catch(() => '');
+              throw new Error(errText || 'Failed to save wish');
+            }
             await loadSharedWishes();
             e.target.reset();
             showToast('Your wish is saved and visible to everyone!');
           } catch (err) {
-            showToast('Could not save wish right now. Please try again.');
+            wishesList.push(newWish);
+            saveLocalWishes(wishesList);
+            renderWishes();
+            e.target.reset();
+            showToast('Saved locally — check Supabase table & RLS policy for shared sync.');
           } finally {
             wishSubmitBtn.disabled = false;
             wishSubmitBtn.textContent = 'Send Wishes';
@@ -1302,9 +1315,7 @@
         }
 
         wishesList.push(newWish);
-        try {
-          localStorage.setItem('pushpa_yogendrachar_wishes', JSON.stringify(wishesList));
-        } catch (err) {}
+        saveLocalWishes(wishesList);
         renderWishes();
         e.target.reset();
         wishSubmitBtn.disabled = false;
