@@ -1192,12 +1192,12 @@
       // --- Shared Wishes & Blessings (Supabase REST API + localStorage fallback) ---
       const RAW_SUPABASE_URL = 'https://sxyrlqplxbikktteunyz.supabase.co';
       const SUPABASE_URL = RAW_SUPABASE_URL.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-      const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_xcSb7m1r-nbEA1yBHQFvfw_IguTpp4b';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4eXJscXBseGJpa2t0dGV1bnl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNTcwMTUsImV4cCI6MjExMDczMzAxNX0.RiRll1xDGBr_pxzuYCJaQcM3kE0xAEVbR0cPZbcMsZE';
       const hasSharedBackend =
         SUPABASE_URL &&
-        SUPABASE_PUBLISHABLE_KEY &&
+        SUPABASE_ANON_KEY &&
         !SUPABASE_URL.startsWith('YOUR_') &&
-        !SUPABASE_PUBLISHABLE_KEY.startsWith('YOUR_');
+        !SUPABASE_ANON_KEY.startsWith('YOUR_');
 
       const defaultWishes = [
         { name: 'Srinivas B V & Manjula', relation: 'Parents of the Bride', message: 'Welcoming everyone with warmth, love, and blessings!' },
@@ -1247,7 +1247,8 @@
               `${SUPABASE_URL}/rest/v1/wishes?select=name,relation,message,created_at&order=created_at.asc`,
               {
                 headers: {
-                  apikey: SUPABASE_PUBLISHABLE_KEY
+                  apikey: SUPABASE_ANON_KEY,
+                  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
                 }
               }
             );
@@ -1289,7 +1290,8 @@
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                apikey: SUPABASE_PUBLISHABLE_KEY,
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
                 Prefer: 'return=minimal'
               },
               body: JSON.stringify(newWish)
