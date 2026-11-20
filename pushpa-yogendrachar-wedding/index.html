@@ -417,7 +417,7 @@
           <p class="text-[11px] uppercase tracking-[0.25em] text-[#C59B43] font-semibold mb-1">Venue</p>
           <p class="font-serif-editorial text-xl font-semibold text-[#1B4332]">Muktamba Paramashivaiah Kalyana Mantapa</p>
           <p class="text-xs text-[#2D5A44] mt-1 leading-relaxed">
-            Chaithanya Badavane, Geddalahalli Main Road, Upparalli, Tumakuru, Karnataka 572102
+            Chaithanya Badavane, Geddalahalli Main Road, Upparahalli, Tumakuru, Karnataka 572102
           </p>
         </div>
 
@@ -531,7 +531,7 @@
               <textarea id="wish-message" rows="3" required placeholder="Write your blessings for the bride &amp; groom..." class="w-full px-4 py-2.5 rounded-xl border border-[#C59B43]/50 bg-[#FAF7F0] text-sm text-[#1B4332] focus:outline-none focus:ring-2 focus:ring-[#1B4332]"></textarea>
             </div>
 
-            <button type="submit" class="w-full py-3 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] hover:bg-[#2D5A44] transition-colors shadow-md">
+            <button id="wish-submit-btn" type="submit" class="w-full py-3 rounded-full bg-[#1B4332] text-[#FAF7F0] text-xs font-semibold uppercase tracking-[0.22em] hover:bg-[#2D5A44] transition-colors shadow-md disabled:opacity-60">
               Send Wishes
             </button>
           </form>
@@ -561,7 +561,7 @@
         </div>
       </div>
 
-<!-- Creator Credit Centered at End -->
+      <!-- Creator Credit Centered at End -->
       <div class="max-w-5xl mx-auto mt-10 pt-4 border-t border-[#C59B43]/20 flex justify-center">
         <a href="https://github.com/DarshanS8553642855" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-[11px] text-[#6B8E78] hover:text-[#1B4332] transition-colors">
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -1109,7 +1109,7 @@
         });
       }
 
-     let wasMusicPlayingBeforeVideo = false;
+      let wasMusicPlayingBeforeVideo = false;
 
       function closeVideoTheater() {
         modalVideoContainer.innerHTML = '';
@@ -1189,48 +1189,126 @@
         showToast('Calendar invite downloaded!');
       });
 
-      // --- Wishes & Blessings Form ---
+      // --- Shared Wishes & Blessings (Supabase REST API + localStorage fallback) ---
+      const SUPABASE_URL = 'https://sxyrlqplxbikktteunyz.supabase.co'; // e.g., https://xyzcompany.supabase.co
+      const SUPABASE_ANON_KEY = 'sb_publishable_xcSb7m1r-nbEA1yBHQFvfw_IguTpp4b';
+      const hasSharedBackend =
+        SUPABASE_URL &&
+        SUPABASE_ANON_KEY &&
+        !SUPABASE_URL.startsWith('YOUR_') &&
+        !SUPABASE_ANON_KEY.startsWith('YOUR_');
+
       const defaultWishes = [
         { name: 'Srinivas B V & Manjula', relation: 'Parents of the Bride', message: 'Welcoming everyone with warmth, love, and blessings!' },
-        { name: 'Mohan Kumar H K & Lalitha C', relation: 'Parents of the Groom', message: 'Wishing Pushpa & Yogendra a lifetime of happiness together!' }
+        { name: 'H K Mohan Kumar & C Lalitha', relation: 'Parents of the Groom', message: 'Wishing Pushpa & Yogendra a lifetime of happiness together!' }
       ];
       let wishesList = [...defaultWishes];
-      try {
-        const saved = localStorage.getItem('pushpa_yogendrachar_wishes');
-        if (saved) wishesList = JSON.parse(saved);
-      } catch (e) {}
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
 
       function renderWishes() {
         const listEl = document.getElementById('wishes-list');
         listEl.innerHTML = '';
-        wishesList.slice().reverse().forEach((item) => {
+        const combined = [...defaultWishes, ...wishesList.filter((w) =>
+          !defaultWishes.some((d) => d.name === w.name && d.message === w.message)
+        )];
+        combined.slice().reverse().forEach((item) => {
           const div = document.createElement('div');
           div.className = 'p-3.5 rounded-xl bg-[#FAF7F0] border border-[#C59B43]/30 text-xs';
           div.innerHTML = `
             <div class="flex items-center justify-between gap-2 mb-1">
-              <span class="font-semibold text-[#1B4332]">${item.name}</span>
-              ${item.relation ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1B4332]/10 text-[#1B4332]">${item.relation}</span>` : ''}
+              <span class="font-semibold text-[#1B4332]">${escapeHtml(item.name)}</span>
+              ${item.relation ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#1B4332]/10 text-[#1B4332]">${escapeHtml(item.relation)}</span>` : ''}
             </div>
-            <p class="text-[#2D5A44] italic">“${item.message}”</p>
+            <p class="text-[#2D5A44] italic">“${escapeHtml(item.message)}”</p>
           `;
           listEl.appendChild(div);
         });
       }
-      renderWishes();
 
-      document.getElementById('wishes-form').addEventListener('submit', (e) => {
+      async function loadSharedWishes() {
+        if (hasSharedBackend) {
+          try {
+            const res = await fetch(
+              `${SUPABASE_URL}/rest/v1/wishes?select=name,relation,message,created_at&order=created_at.asc`,
+              {
+                headers: {
+                  apikey: SUPABASE_ANON_KEY,
+                  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+                }
+              }
+            );
+            if (res.ok) {
+              const rows = await res.json();
+              wishesList = Array.isArray(rows) ? rows : [];
+              renderWishes();
+              return;
+            }
+          } catch (e) {}
+        }
+
+        try {
+          const saved = localStorage.getItem('pushpa_yogendrachar_wishes');
+          if (saved) wishesList = JSON.parse(saved);
+        } catch (e) {}
+        renderWishes();
+      }
+
+      loadSharedWishes();
+
+      const wishSubmitBtn = document.getElementById('wish-submit-btn');
+      document.getElementById('wishes-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('wish-name').value.trim();
         const relation = document.getElementById('wish-relation').value.trim();
         const message = document.getElementById('wish-message').value.trim();
         if (!name || !message) return;
 
-        wishesList.push({ name, relation, message });
+        wishSubmitBtn.disabled = true;
+        wishSubmitBtn.textContent = 'Sending...';
+
+        const newWish = { name, relation, message };
+
+        if (hasSharedBackend) {
+          try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/wishes`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+                Prefer: 'return=minimal'
+              },
+              body: JSON.stringify(newWish)
+            });
+            if (!res.ok) throw new Error('Failed to save wish');
+            await loadSharedWishes();
+            e.target.reset();
+            showToast('Your wish is saved and visible to everyone!');
+          } catch (err) {
+            showToast('Could not save wish right now. Please try again.');
+          } finally {
+            wishSubmitBtn.disabled = false;
+            wishSubmitBtn.textContent = 'Send Wishes';
+          }
+          return;
+        }
+
+        wishesList.push(newWish);
         try {
           localStorage.setItem('pushpa_yogendrachar_wishes', JSON.stringify(wishesList));
         } catch (err) {}
         renderWishes();
         e.target.reset();
+        wishSubmitBtn.disabled = false;
+        wishSubmitBtn.textContent = 'Send Wishes';
         showToast('Thank you for your warm wishes!');
       });
     })();
