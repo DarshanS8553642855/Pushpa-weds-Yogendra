@@ -1109,17 +1109,39 @@
         });
       }
 
+     let wasMusicPlayingBeforeVideo = false;
+
+      function closeVideoTheater() {
+        modalVideoContainer.innerHTML = '';
+        videoModal.classList.add('hidden');
+        videoModal.classList.remove('flex');
+        if (wasMusicPlayingBeforeVideo) {
+          startMusic();
+          wasMusicPlayingBeforeVideo = false;
+        }
+      }
+
       function openVideoModal(slot) {
+        if (musicPlaying) {
+          wasMusicPlayingBeforeVideo = true;
+          stopMusic();
+        }
         modalVideoTitle.textContent = slot.title;
         modalVideoContainer.innerHTML = `<video src="${slot.src}" controls autoplay playsinline class="w-full h-full rounded-xl"></video>`;
+        const modalVidEl = modalVideoContainer.querySelector('video');
+        modalVidEl.addEventListener('play', () => {
+          if (musicPlaying) {
+            wasMusicPlayingBeforeVideo = true;
+            stopMusic();
+          }
+        });
         videoModal.classList.remove('hidden');
         videoModal.classList.add('flex');
       }
 
-      document.getElementById('close-video-modal').addEventListener('click', () => {
-        modalVideoContainer.innerHTML = '';
-        videoModal.classList.add('hidden');
-        videoModal.classList.remove('flex');
+      document.getElementById('close-video-modal').addEventListener('click', closeVideoTheater);
+      videoModal.addEventListener('click', (e) => {
+        if (e.target === videoModal) closeVideoTheater();
       });
 
       document.querySelectorAll('.video-tab-btn').forEach((btn) => {
